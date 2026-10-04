@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>eFootball Canva & Engine Build Master</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              gold: '#f59e0b',
+              epic: '#10b981',
+              showtime: '#a855f7',
+              darkBg: '#0f172a',
+              cardBg: '#1e293b'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Teko:wght@500;700&family=Inter:wght@400;600;700;800&display=swap');
+
+    .font-teko { font-family: 'Teko', sans-serif; }
+    
+    /* Dynamic Glowing Themes for Canva Card */
+    .card-theme-epic {
+      background: linear-gradient(135deg, #022c22 0%, #064e3b 40%, #022c22 100%);
+      border: 2px solid #34d399;
+      box-shadow: 0 0 25px rgba(52, 211, 153, 0.3);
+    }
+    .card-theme-showtime {
+      background: linear-gradient(135deg, #3b0764 0%, #581c87 40%, #2e1065 100%);
+      border: 2px solid #c084fc;
+      box-shadow: 0 0 25px rgba(192, 132, 252, 0.3);
+    }
+    .card-theme-bigtime {
+      background: linear-gradient(135deg, #451a03 0%, #78350f 40%, #292524 100%);
+      border: 2px solid #fbbf24;
+      box-shadow: 0 0 25px rgba(251, 191, 36, 0.35);
+    }
+    .card-theme-highlight {
+      background: linear-gradient(135deg, #0c4a6e 0%, #0369a1 40%, #0f172a 100%);
+      border: 2px solid #38bdf8;
+      box-shadow: 0 0 25px rgba(56, 189, 248, 0.3);
+    }
+
+    /* Range Input Custom Styling */
+    input[type=range] {
+      -webkit-appearance: none;
+      background: #334155;
+      border-radius: 999px;
+      height: 6px;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      height: 16px;
+      width: 16px;
+      border-radius: 50%;
+      background: #f59e0b;
+      cursor: pointer;
+      box-shadow: 0 0 8px rgba(245, 158, 11, 0.6);
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #0f172a; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #475569; }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans selection:bg-amber-500 selection:text-slate-950 pb-12">
+
+  <!-- Top Navigation HUD -->
+  <header class="sticky top-0 z-50 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 px-4 lg:px-8 py-3">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 to-emerald-500 flex items-center justify-center text-slate-950 font-bold text-xl shadow-lg">
+          <i class="fa-solid fa-gamepad"></i>
+        </div>
+        <div>
+          <h1 class="text-xl font-extrabold tracking-tight bg-gradient-to-r from-amber-400 via-emerald-400 to-sky-400 bg-clip-text text-transparent">
+            eFootball Engine Build Master
+          </h1>
+          <p class="text-xs text-slate-400">Canva de Atributos & Análise de Física da Engine (2026)</p>
+        </div>
+      </div>
+
+      <!-- Global Actions -->
+      <div class="flex items-center gap-3 w-full md:w-auto justify-end">
+        <button onclick="otimizarBuild()" class="px-3 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition shadow-lg shadow-emerald-950">
+          <i class="fa-solid fa-wand-magic-sparkles"></i> Auto-Otimizar Engine
+        </button>
+        <button onclick="exportarCarta()" class="px-3 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 rounded-lg text-xs font-bold flex items-center gap-1.5 transition shadow-lg shadow-amber-950">
+          <i class="fa-solid fa-download"></i> Baixar Carta
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="max-w-7xl mx-auto px-4 lg:px-8 pt-6">
+
+    <!-- Preset Profile Selector Bar -->
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 mb-6 shadow-xl">
+      <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
+        <i class="fa-solid fa-users-gear text-amber-400 mr-1"></i> Seleção de Arquétipo do Jogador:
+      </label>
+      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-2" id="presetButtons">
+        <!-- Dyn Buttons -->
+      </div>
+    </div>
+
+    <!-- Main 3-Column Interactive Canva Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+      <!-- COLUMN 1: Canva Visual Card Editor (4 cols) -->
+      <div class="lg:col-span-4 flex flex-col items-center space-y-4">
+        
+        <!-- Live Card Container -->
+        <div id="cardCanvasContainer" class="relative w-72 h-[420px] rounded-3xl p-5 flex flex-col justify-between overflow-hidden transition-all duration-300 card-theme-epic select-none">
+          <!-- Background Glow Effect -->
+          <div class="absolute inset-0 bg-gradient-to-b from-transparent via-black/20 to-black/80 pointer-events-none"></div>
+
+          <!-- Top Section: OVR & Position -->
+          <div class="relative z-10 flex justify-between items-start">
+            <div class="text-left">
+              <div id="cardOvr" class="text-6xl font-extrabold font-teko leading-none text-amber-300 drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)]">
+                99
+              </div>
+              <div id="cardPos" class="inline-block px-2 py-0.5 bg-amber-400 text-slate-950 text-xs font-extrabold rounded tracking-wider shadow">
+                CF
+              </div>
+            </div>
+            
+            <!-- Card Theme Selector Badge -->
+            <div class="relative z-20">
+              <select id="cardThemeSelect" onchange="mudarTemaCarta(this.value)" class="bg-slate-950/80 text-[10px] text-slate-300 border border-slate-700 rounded px-2 py-1 outline-none cursor-pointer">
+                <option value="card-theme-epic">Epic Gold</option>
+                <option value="card-theme-showtime">Showtime Purple</option>
+                <option value="card-theme-bigtime">Big Time Gold</option>
+                <option value="card-theme-highlight">Highlight Blue</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Center Section: Avatar & Name -->
+          <div class="relative z-10 flex flex-col items-center my-auto text-center">
+            <div class="relative group cursor-pointer" onclick="document.getElementById('uploadFoto').click()">
+              <div class="w-32 h-32 rounded-full overflow-hidden border-2 border-amber-400/50 shadow-2xl bg-slate-950/60 flex items-center justify-center">
+                <img id="cardImage" src="https://placehold.co/200x200/0f172a/f59e0b?text=Jogador" class="w-full h-full object-cover" alt="Jogador">
+              </div>
+              <div class="absolute inset-0 bg-black/60 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition text-xs font-bold text-amber-300">
+                <i class="fa-solid fa-camera mr-1"></i> Alterar
+              </div>
+            </div>
+            <input type="file" id="uploadFoto" accept="image/*" class="hidden" onchange="carregarFoto(event)">
+
+            <h3 id="cardName" class="mt-2 text-2xl font-black uppercase font-teko tracking-wide text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">
+              ERLING HAALAND
+            </h3>
+            <p id="cardBio" class="text-[11px] font-semibold text-emerald-300 tracking-wider">
+              195 cm • 88 kg • PÉ DIREITO
+            </p>
+          </div>
+
+          <!-- Bottom Section: Key Stats Overlay -->
+          <div class="relative z-10 grid grid-cols-3 gap-1 bg-slate-950/80 backdrop-blur-md rounded-xl p-2.5 border border-slate-700/50 text-center">
+            <div>
+              <div class="text-[9px] text-slate-400 uppercase font-bold">Acel.</div>
+              <div id="statMiniAcel" class="text-sm font-black text-amber-400">92</div>
+            </div>
+            <div>
+              <div class="text-[9px] text-slate-400 uppercase font-bold">Equil.</div>
+              <div id="statMiniEq" class="text-sm font-black text-emerald-400">82</div>
+            </div>
+            <div>
+              <div class="text-[9px] text-slate-400 uppercase font-bold">Cont. Fis</div>
+              <div id="statMiniCont" class="text-sm font-black text-sky-400">100</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Canva Quick Card Info -->
+        <div class="w-72 bg-slate-900 border border-slate-800 rounded-xl p-3 text-xs space-y-2">
+          <div class="flex justify-between items-center text-slate-400">
+            <span>Pontos Disponíveis:</span>
+            <span id="pontosBuild" class="font-bold text-amber-400 text-sm">24 / 24</span>
+          </div>
+          <div class="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
+            <div id="barPontos" class="bg-amber-400 h-full w-full transition-all duration-300"></div>
+          </div>
+          <div class="flex justify-between items-center pt-1 border-t border-slate-800 text-[11px]">
+            <span class="text-slate-400">Nota da Engine:</span>
+            <span id="engineScore" class="font-extrabold text-emerald-400">88 / 100</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- COLUMN 2: Physical & Attribute Fine Tuner (4 cols) -->
+      <div class="lg:col-span-4 bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-5 shadow-xl">
+        <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+          <h2 class="text-sm font-bold uppercase tracking-wider text-amber-400 flex items-center gap-2">
+            <i class="fa-solid fa-sliders"></i> Ajuste de Atributos & Biomecânica
+          </h2>
+          <button onclick="resetarBuild()" class="text-[11px] text-slate-400 hover:text-rose-400 transition">
+            <i class="fa-solid fa-rotate-left"></i> Reset
+          </button>
+        </div>
+
+        <!-- Biomechanics Inputs -->
+        <div class="space-y-3 bg-slate-950/60 p-3 rounded-xl border border-slate-800">
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-[11px] text-slate-400 font-medium mb-1">Altura (cm)</label>
+              <input type="number" id="inputAltura" min="160" max="210" value="195" onchange="atualizarBuild()" class="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-amber-400 font-bold focus:outline-none focus:border-amber-400">
+            </div>
+            <div>
+              <label class="block text-[11px] text-slate-400 font-medium mb-1">Peso (kg)</label>
+              <input type="number" id="inputPeso" min="50" max="110" value="88" onchange="atualizarBuild()" class="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-amber-400 font-bold focus:outline-none focus:border-amber-400">
+            </div>
+          </div>
+        </div>
+
+        <!-- Key Attribute Sliders -->
+        <div class="space-y-4">
+          
+          <!-- Tight Possession -->
+          <div>
+            <div class="flex justify-between text-xs mb-1">
+              <span class="text-slate-300 font-medium">Tight Possession (Condução Firme)</span>
+              <span id="valTight" class="font-bold text-amber-400">78</span>
+            </div>
+            <input type="range" id="sliderTight" min="60" max="99" value="78" oninput="atualizarBuild()" class="w-full">
+            <p class="text-[10px] text-slate-500 mt-0.5">Controla o tempo de reação ao girar o analógico em espaços curtos.</p>
+          </div>
+
+          <!-- Equilíbrio (Body Control) -->
+          <div>
+            <div class="flex justify-between text-xs mb-1">
+              <span class="text-slate-300 font-medium">Equilíbrio (Body Control)</span>
+              <span id="valEquilibrio" class="font-bold text-amber-400">82</span>
+            </div>
+            <input type="range" id="sliderEquilibrio" min="60" max="99" value="82" oninput="atualizarBuild()" class="w-full">
+            <p class="text-[10px] text-slate-500 mt-0.5">Determina resistência a trancos. Trava crítica na engine = 90.</p>
+          </div>
+
+          <!-- Contato Físico -->
+          <div>
+            <div class="flex justify-between text-xs mb-1">
+              <span class="text-slate-300 font-medium">Contato Físico</span>
+              <span id="valContato" class="font-bold text-amber-400">100</span>
+            </div>
+            <input type="range" id="sliderContato" min="60" max="99" value="100" oninput="atualizarBuild()" class="w-full">
+            <p class="text-[10px] text-slate-500 mt-0.5">Massa de impacto e proteção de bola de costas para o zagueiro.</p>
+          </div>
+
+          <!-- Aceleração -->
+          <div>
+            <div class="flex justify-between text-xs mb-1">
+              <span class="text-slate-300 font-medium">Aceleração</span>
+              <span id="valAceleracao" class="font-bold text-amber-400">92</span>
+            </div>
+            <input type="range" id="sliderAceleracao" min="60" max="99" value="92" oninput="atualizarBuild()" class="w-full">
+            <p class="text-[10px] text-slate-500 mt-0.5">Duração do arranque inicial nos 5 primeiros metros.</p>
+          </div>
+
+          <!-- Velocidade de Condução / Drible -->
+          <div>
+            <div class="flex justify-between text-xs mb-1">
+              <span class="text-slate-300 font-medium">Talento em Drible / Controle</span>
+              <span id="valDrible" class="font-bold text-amber-400">80</span>
+            </div>
+            <input type="range" id="sliderDrible" min="60" max="99" value="80" oninput="atualizarBuild()" class="w-full">
+            <p class="text-[10px] text-slate-500 mt-0.5">Distância que a bola fica do pé ao correr em velocidade.</p>
+          </div>
+
+          <!-- Desarme / Agressividade -->
+          <div>
+            <div class="flex justify-between text-xs mb-1">
+              <span class="text-slate-300 font-medium">Desarme / Impacto Defensivo</span>
+              <span id="valDesarme" class="font-bold text-amber-400">55</span>
+            </div>
+            <input type="range" id="sliderDesarme" min="40" max="99" value="55" oninput="atualizarBuild()" class="w-full">
+            <p class="text-[10px] text-slate-500 mt-0.5">Eficiência de roubada de bola com alavanca de pernas.</p>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- COLUMN 3: Engine Diagnostics & Mechanics Breakdown (4 cols) -->
+      <div class="lg:col-span-4 bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4 shadow-xl">
+        <div class="border-b border-slate-800 pb-3 flex justify-between items-center">
+          <h2 class="text-sm font-bold uppercase tracking-wider text-sky-400 flex items-center gap-2">
+            <i class="fa-solid fa-microchip"></i> Diagnóstico Avançado de Engine
+          </h2>
+          <span class="text-[10px] px-2 py-0.5 bg-slate-800 text-slate-300 rounded border border-slate-700">v2026 Physics</span>
+        </div>
+
+        <!-- Biomechanics Summary -->
+        <div class="grid grid-cols-2 gap-2 text-xs">
+          <div class="bg-slate-950/80 p-2.5 rounded-lg border border-slate-800">
+            <span class="text-slate-400 block text-[10px]">Tipo de Passada:</span>
+            <span id="diagPassada" class="font-bold text-amber-400">Passada Longa</span>
+          </div>
+          <div class="bg-slate-950/80 p-2.5 rounded-lg border border-slate-800">
+            <span class="text-slate-400 block text-[10px]">Inércia de Giro (>45°):</span>
+            <span id="diagInercia" class="font-bold text-rose-400">+4 Frames Penalty</span>
+          </div>
+        </div>
+
+        <!-- Dynamic Warning Cards Container -->
+        <div id="diagWarningList" class="space-y-2.5 max-h-[460px] overflow-y-auto pr-1">
+          <!-- Dyn Generated Cards -->
+        </div>
+
+        <!-- Toast Notification Area -->
+        <div id="toastArea" class="hidden p-3 bg-emerald-950 border border-emerald-500 text-emerald-200 text-xs rounded-xl flex items-center gap-2">
+          <i class="fa-solid fa-circle-check"></i>
+          <span id="toastText">Ação concluída!</span>
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+
+  <script>
+    // System State
+    const ARCHETYPES = {
+      pivo: {
+        id: 'pivo',
+        name: 'Centroavante Gigante / Pivô',
+        icon: 'fa-child-reaching',
+        height: 195,
+        weight: 88,
+        pos: 'CF',
+        ovr: 99,
+        tight: 78,
+        eq: 82,
+        cont: 100,
+        acel: 92,
+        drible: 80,
+        desarme: 45,
+        photo: 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=400&auto=format&fit=crop&q=80'
+      },
+      driblador: {
+        id: 'driblador',
+        name: 'Ponta / Driblador Baixo',
+        icon: 'fa-bolt',
+        height: 169,
+        weight: 67,
+        pos: 'RWF',
+        ovr: 98,
+        tight: 92,
+        eq: 91,
+        cont: 62,
+        acel: 94,
+        drible: 93,
+        desarme: 42,
+        photo: 'https://images.unsplash.com/photo-1518091043644-c1d4457512c6?w=400&auto=format&fit=crop&q=80'
+      },
+      pontaveloz: {
+        id: 'pontaveloz',
+        name: 'Ponta Explosivo',
+        icon: 'fa-gauge-high',
+        height: 178,
+        weight: 73,
+        pos: 'LWF',
+        ovr: 97,
+        tight: 86,
+        eq: 84,
+        cont: 72,
+        acel: 97,
+        drible: 89,
+        desarme: 48,
+        photo: 'https://images.unsplash.com/photo-1543326727-cf6c39e8f84c?w=400&auto=format&fit=crop&q=80'
+      },
+      meiamotor: {
+        id: 'meiamotor',
+        name: 'Meia Motor (Box-to-Box)',
+        icon: 'fa-gears',
+        height: 186,
+        weight: 77,
+        pos: 'CMF',
+        ovr: 96,
+        tight: 84,
+        eq: 85,
+        cont: 82,
+        acel: 85,
+        drible: 83,
+        desarme: 78,
+        photo: 'https://images.unsplash.com/photo-1522778119026-d647f0596c20?w=400&auto=format&fit=crop&q=80'
+      },
+      zagueiro: {
+        id: 'zagueiro',
+        name: 'Zagueiro Tanque',
+        icon: 'fa-shield-halved',
+        height: 193,
+        weight: 92,
+        pos: 'CB',
+        ovr: 98,
+        tight: 68,
+        eq: 66,
+        cont: 94,
+        acel: 76,
+        drible: 65,
+        desarme: 96,
+        photo: 'https://images.unsplash.com/photo-1560272564-c83b66b1ad12?w=400&auto=format&fit=crop&q=80'
+      },
+      lateral: {
+        id: 'lateral',
+        name: 'Lateral Corredor',
+        icon: 'fa-person-running',
+        height: 180,
+        weight: 75,
+        pos: 'LB',
+        ovr: 95,
+        tight: 80,
+        eq: 81,
+        cont: 78,
+        acel: 92,
+        drible: 82,
+        desarme: 84,
+        photo: 'https://images.unsplash.com/photo-1517927033932-b3d18e61fb3a?w=400&auto=format&fit=crop&q=80'
+      },
+      goleiro: {
+        id: 'goleiro',
+        name: 'Goleiro Gigante',
+        icon: 'fa-hand',
+        height: 199,
+        weight: 94,
+        pos: 'GK',
+        ovr: 96,
+        tight: 60,
+        eq: 60,
+        cont: 88,
+        acel: 62,
+        drible: 60,
+        desarme: 50,
+        photo: 'https://images.unsplash.com/photo-1577223625816-7546f13df25d?w=400&auto=format&fit=crop&q=80'
+      }
+    };
+
+    let currentArchetype = 'pivo';
+
+    // Initialize Presets Bar
+    function renderPresets() {
+      const container = document.getElementById('presetButtons');
+      container.innerHTML = '';
+
+      Object.keys(ARCHETYPES).forEach(key => {
+        const item = ARCHETYPES[key];
+        const isSelected = key === currentArchetype;
+        container.innerHTML += `
+          <button onclick="selecionarArquétipo('${key}')" class="p-2 rounded-xl text-left border transition flex flex-col justify-between ${
+            isSelected 
+              ? 'bg-amber-500/10 border-amber-500 text-amber-400 shadow-md' 
+              : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-200'
+          }">
+            <div class="flex items-center gap-1.5 text-xs font-bold truncate">
+              <i class="fa-solid ${item.icon} text-[10px]"></i> ${item.pos}
+            </div>
+            <div class="text-[10px] opacity-80 truncate">${item.name.split('/')[0]}</div>
+          </button>
+        `;
+      });
+    }
+
+    function selecionarArquétipo(key) {
+      currentArchetype = key;
+      const data = ARCHETYPES[key];
+
+      document.getElementById('inputAltura').value = data.height;
+      document.getElementById('inputPeso').value = data.weight;
+      document.getElementById('sliderTight').value = data.tight;
+      document.getElementById('sliderEquilibrio').value = data.eq;
+      document.getElementById('sliderContato').value = data.cont;
+      document.getElementById('sliderAceleracao').value = data.acel;
+      document.getElementById('sliderDrible').value = data.drible;
+      document.getElementById('sliderDesarme').value = data.desarme;
+
+      document.getElementById('cardPos').innerText = data.pos;
+      document.getElementById('cardOvr').innerText = data.ovr;
+      document.getElementById('cardName').innerText = data.name.toUpperCase();
+      document.getElementById('cardImage').src = data.photo;
+
+      renderPresets();
+      atualizarBuild();
+    }
+
+    function atualizarBuild() {
+      const altura = parseInt(document.getElementById('inputAltura').value) || 180;
+      const peso = parseInt(document.getElementById('inputPeso').value) || 75;
+      const tight = parseInt(document.getElementById('sliderTight').value);
+      const eq = parseInt(document.getElementById('sliderEquilibrio').value);
+      const contato = parseInt(document.getElementById('sliderContato').value);
+      const acel = parseInt(document.getElementById('sliderAceleracao').value);
+      const drible = parseInt(document.getElementById('sliderDrible').value);
+      const desarme = parseInt(document.getElementById('sliderDesarme').value);
+
+      // Update Labels
+      document.getElementById('valTight').innerText = tight;
+      document.getElementById('valEquilibrio').innerText = eq;
+      document.getElementById('valContato').innerText = contato;
+      document.getElementById('valAceleracao').innerText = acel;
+      document.getElementById('valDrible').innerText = drible;
+      document.getElementById('valDesarme').innerText = desarme;
+
+      // Update Card Visual Elements
+      document.getElementById('cardBio').innerText = `${altura} cm • ${peso} kg • PÉ DIREITO`;
+      document.getElementById('statMiniAcel').innerText = acel;
+      document.getElementById('statMiniEq').innerText = eq;
+      document.getElementById('statMiniCont').innerText = contato;
+
+      // Calculate Engine Mechanics & Biomechanics
+      processarDiagnosticoEngine(altura, peso, tight, eq, contato, acel, drible, desarme);
+    }
+
+    function processarDiagnosticoEngine(altura, peso, tight, eq, contato, acel, drible, desarme) {
+      const warningList = document.getElementById('diagWarningList');
+      warningList.innerHTML = '';
+
+      let engineScore = 100;
+
+      // 1. Passada & Biomecânica
+      if (altura >= 188) {
+        document.getElementById('diagPassada').innerText = 'Passada Longa (Inércia)';
+        document.getElementById('diagPassada').className = 'font-bold text-amber-400';
+        document.getElementById('diagInercia').innerText = '+4 Frames Penalty';
+        document.getElementById('diagInercia').className = 'font-bold text-rose-400';
+      } else if (altura <= 172) {
+        document.getElementById('diagPassada').innerText = 'Passada Curta (Ágil)';
+        document.getElementById('diagPassada').className = 'font-bold text-emerald-400';
+        document.getElementById('diagInercia').innerText = '0 Frames Penalty';
+        document.getElementById('diagInercia').className = 'font-bold text-emerald-400';
+      } else {
+        document.getElementById('diagPassada').innerText = 'Passada Média';
+        document.getElementById('diagPassada').className = 'font-bold text-sky-400';
+        document.getElementById('diagInercia').innerText = '+2 Frames Penalty';
+        document.getElementById('diagInercia').className = 'font-bold text-amber-400';
+      }
+
+      // 2. Regra Máxima: Trava de 90 em Equilíbrio
+      if (eq >= 90) {
+        warningList.innerHTML += createDiagCard('success', 'Trava de 90 Atingida (Equilíbrio)', 'O motor do jogo anula 100% dos staggers/animações de desequilíbrio severo ao contato corporal.');
+      } else if (eq >= 84 && eq < 90) {
+        engineScore -= 8;
+        warningList.innerHTML += createDiagCard('warning', 'Fronteira Crítica de Equilíbrio (' + eq + ')', 'Você está muito perto da trava de 90. Invista +' + (90 - eq) + ' pontos para destravar a anulação total de staggers.');
+      } else {
+        engineScore -= 15;
+        warningList.innerHTML += createDiagCard('danger', 'Vulnerável a Trompadas', 'Equilíbrio em ' + eq + '. Contra zagueiros físicos, a animação de desequilíbrio será ativada constantemente.');
+      }
+
+      // 3. Tight Possession vs Altura (Efeito Giro Duro)
+      if (altura >= 188 && tight < 82) {
+        engineScore -= 12;
+        warningList.innerHTML += createDiagCard('danger', 'Giro Lento em Espaço Curto', 'Tight Possession em ' + tight + ' para altura de ' + altura + 'cm gera tempo excessivo de giro no analógico (>45°).');
+      } else if (altura >= 188 && tight >= 82) {
+        warningList.innerHTML += createDiagCard('success', 'Giro Otimizado para Altura', 'Tight Possession de ' + tight + ' compensa a inércia da altura do jogador.');
+      }
+
+      // 4. Excesso / Rendimento Decrescente de Contato Físico
+      if (altura >= 190 && contato > 92) {
+        engineScore -= 10;
+        warningList.innerHTML += createDiagCard('warning', 'Retorno Decrescente (Contato Físico)', 'A altura (' + altura + 'cm) já fornece alavanca física natural. Contato em ' + contato + ' desperdiça pontos que iriam para Drible/Aceleração.');
+      } else if (altura <= 172 && contato > 80) {
+        engineScore -= 12;
+        warningList.innerHTML += createDiagCard('warning', 'Ineficiência Física (Baixa Altura)', 'Jogador baixo com ' + contato + ' de Contato Físico não sustenta tranco contra zagueiros pesados. Invista em Equilíbrio 90+.');
+      }
+
+      // 5. Arranque & Duração de Animação
+      if (altura >= 188 && acel > 92) {
+        engineScore -= 6;
+        warningList.innerHTML += createDiagCard('info', 'Arranque com Passada Longa', 'Devido ao tamanho da perna, a animação de aceleração leva mais tempo para completar a passada inicial.');
+      } else if (altura <= 172 && acel >= 90) {
+        warningList.innerHTML += createDiagCard('success', 'Explosão Instantânea', 'Aceleração alta combinada com perna curta garante arranque imediato sem atraso de animação.');
+      }
+
+      // 6. Alcance de Perna em Desarmes
+      if (altura >= 185 && desarme >= 80) {
+        warningList.innerHTML += createDiagCard('success', 'Alcance de Perna Ampliado', 'A alavanca física amplia a hitbox de interceptação e roubada de bola.');
+      }
+
+      // Limit Engine Score Floor
+      engineScore = Math.max(50, engineScore);
+      document.getElementById('engineScore').innerText = `${engineScore} / 100`;
+      document.getElementById('engineScore').className = engineScore >= 85 ? 'font-extrabold text-emerald-400' : engineScore >= 70 ? 'font-extrabold text-amber-400' : 'font-extrabold text-rose-400';
+    }
+
+    function createDiagCard(type, title, desc) {
+      const styles = {
+        success: 'border-emerald-500/50 bg-emerald-950/30 text-emerald-200',
+        warning: 'border-amber-500/50 bg-amber-950/30 text-amber-200',
+        danger: 'border-rose-500/50 bg-rose-950/30 text-rose-200',
+        info: 'border-sky-500/50 bg-sky-950/30 text-sky-200'
+      };
+      const icons = {
+        success: 'fa-circle-check text-emerald-400',
+        warning: 'fa-triangle-exclamation text-amber-400',
+        danger: 'fa-circle-exclamation text-rose-400',
+        info: 'fa-circle-info text-sky-400'
+      };
+
+      return `
+        <div class="p-3 rounded-xl border ${styles[type]} space-y-1 transition duration-200">
+          <div class="font-bold text-xs flex items-center gap-1.5">
+            <i class="fa-solid ${icons[type]}"></i> ${title}
+          </div>
+          <p class="text-[11px] opacity-90 leading-relaxed">${desc}</p>
+        </div>
+      `;
+    }
+
+    function mudarTemaCarta(tema) {
+      const card = document.getElementById('cardCanvasContainer');
+      card.className = `relative w-72 h-[420px] rounded-3xl p-5 flex flex-col justify-between overflow-hidden transition-all duration-300 select-none ${tema}`;
+    }
+
+    function carregarFoto(event) {
+      const reader = new FileReader();
+      reader.onload = function() {
+        document.getElementById('cardImage').src = reader.result;
+        mostrarToast('Foto do jogador atualizada com sucesso!');
+      };
+      if (event.target.files[0]) {
+        reader.readAsDataURL(event.target.files[0]);
+      }
+    }
+
+    function otimizarBuild() {
+      const altura = parseInt(document.getElementById('inputAltura').value) || 180;
+
+      if (altura >= 188) {
+        // Build Otimizada para Gigantes
+        document.getElementById('sliderTight').value = 84;
+        document.getElementById('sliderEquilibrio').value = 82;
+        document.getElementById('sliderContato').value = 90;
+        document.getElementById('sliderAceleracao').value = 88;
+      } else {
+        // Build Otimizada para Jogadores Ágeis
+        document.getElementById('sliderTight').value = 90;
+        document.getElementById('sliderEquilibrio').value = 90;
+        document.getElementById('sliderContato').value = 68;
+        document.getElementById('sliderAceleracao').value = 94;
+      }
+
+      atualizarBuild();
+      mostrarToast('Build otimizada segundo as regras de engine!');
+    }
+
+    function resetarBuild() {
+      selecionarArquétipo(currentArchetype);
+      mostrarToast('Atributos resetados para o padrão.');
+    }
+
+    function exportarCarta() {
+      const container = document.getElementById('cardCanvasContainer');
+      
+      mostrarToast('Gerando imagem da carta...');
+      
+      html2canvas(container, {
+        backgroundColor: null,
+        scale: 2,
+        useCORS: true
+      }).then(canvas => {
+        const link = document.createElement('a');
+        link.download = `efootball-carta-${currentArchetype}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+        mostrarToast('Download da carta iniciado!');
+      }).catch(err => {
+        mostrarToast('Erro ao gerar imagem da carta.');
+      });
+    }
+
+    function mostrarToast(mensagem) {
+      const toast = document.getElementById('toastArea');
+      const text = document.getElementById('toastText');
+      text.innerText = mensagem;
+      toast.classList.remove('hidden');
+
+      setTimeout(() => {
+        toast.classList.add('hidden');
+      }, 3000);
+    }
+
+    // Window Onload Initialization
+    window.onload = function() {
+      renderPresets();
+      selecionarArquétipo('pivo');
+    };
+  </script>
+</body>
+</html>
